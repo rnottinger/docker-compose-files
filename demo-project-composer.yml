@@ -1,0 +1,201 @@
+version: "3.9"
+services:
+  mysql:
+    image: mysql:8
+    container_name: mysql
+    restart: unless-stopped
+    tty: true
+    volumes:
+      - mysql:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: homestead
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: homestead
+      MYSQL_PASSWORD: secret
+    ports:
+      - "13066:3306"
+    networks:
+      - app-network
+  # redis is used for sessions, queues, caching
+  redis:
+    container_name: redis
+    image: redis:7-alpine3.17
+    ports:
+      - "16379:6379"
+    volumes:
+      - redis:/data
+    networks:
+      - app-network
+  nginx:
+    image: nginx:stable-alpine
+    container_name: nginx
+    ports:
+      - "8088:80"
+    volumes:
+      - ./server:/var/www/html
+      - ./server/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - php
+      - mysql
+    networks:
+      - app-network
+  php:
+    container_name: php
+    image: rnottinger/php
+    build:
+      context: server/.
+      dockerfile: docker/Dockerfile
+    ports:
+      - "9000:9000"
+    depends_on:
+      - mysql
+      - redis
+    volumes:
+      - ./server:/var/www/html
+    networks:
+      - app-network
+  composer:
+    image: composer:latest
+    container_name: composer
+    volumes:
+      - ./server:/var/www/html
+    working_dir: /var/www/html
+    networks:
+      - app-network
+# artisan is a php command so we need a php environment
+# we already have a php environment
+#   in the demo-laravel-app service
+  artisan:
+    build:
+      context: server/.
+      dockerfile: docker/Dockerfile
+    container_name: artisan
+    volumes:
+      - ./server:/var/www/html
+    depends_on:
+      - mysql
+    working_dir: /var/www/html
+    # artisan is not installed globally
+    # so we need to specify the full path to the artisan file
+    entrypoint: ['/var/www/html/artisan']
+    networks:
+      - app-network
+  frontend:
+    container_name: angular-app
+    image: rnottinger/angular-app
+    build:
+      context: client/.
+      dockerfile: docker/Dockerfile
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - php
+      - mysql
+    networks:
+      - app-network
+#  npm:
+#    image: node:13.7
+#    container_name: npm
+#    volumes:
+#      - ./server:/var/www/html
+#    working_dir: /var/www/html
+#    entrypoint: ['npm']
+#    networks:
+#      - app-network
+volumes:
+  mysql:
+    driver: local
+  redis:
+    driver: local
+networks:
+  app-network:
+    driver: bridge
+
+
+
+# docker system prune
+
+# Remove all images on the host
+# docker image rm $(docker image ls -aq) -f
+
+# bring docker-compose up
+# docker-compose up
+
+# build images & bring docker-compose up
+# docker-compose up --build
+
+# bring docker-compose down
+# docker-compose down
+
+# bring docker-compose down and remove volumes
+# docker-compose down -v
+
+# install all composer dependencies
+# docker-compose run --rm composer install
+
+# install a single dependencies
+# docker-compose run --rm composer require some/package
+
+# npm uses our projects package.json file
+# and downloads all of the necessary package files
+# docker-compose run --rm npm install
+
+# to package everything together with laravel's mix webpack wrapper
+#   and get our compiled assets
+# docker-compose run --rm npm run dev
+
+
+
+# redis-cli is installed locally
+# redis-cli -h 127.0.0.1 -p 16379
+#  127.0.0.1:16379> GET test
+#  (nil)
+#  127.0.0.1:16379> SET test 1
+#  127.0.0.1:16379> GET test
+#  "1"
+# we can work with redis from a docker container
+#  next we need to configure this to work in our application
+#  first make sure following redis connection settings
+#    are configured in a fresh laravel project .env file
+#  BROADCAST_DRIVER=log
+#  CACHE_DRIVER=redis
+#  SESSION_DRIVER=redis
+#  SESSION_LIFETIME=120
+#  QUEUE_DRIVER=redis
+#  REDIS_HOST=redis
+#  REDIS_PASSWORD=null
+#  REDIS_PORT=6379
+# phpredis module is being installed
+# docker-compose exec php bash
+# 3fdf6f9d5097:/var/www/html# php artisan tinker
+#  > use Illuminate\Support\Facades\Redis;
+#  > Redis::get('test');
+#  = null
+#
+#  > Redis::set('test',1);
+#  = true
+#
+#  > Redis::get('test');
+#  = "1"
+
+
+# docker-compose run --rm artisan migrate
+# remember to first change
+#   the mysql connection settings
+#     in a fresh laravel project .env file
+#  DB_CONNECTION=mysql
+  # the mysql service name used in docker-compose.yml file
+#  DB_HOST=demo-mysql
+#  DB_PORT=3306
+#  DB_DATABASE=homestead
+#  DB_USERNAME=homestead
+#  DB_PASSWORD=secret
+
+
+#   by default composer expects the files to be in /data folder
+#   since we want to keep everything matching across our container network
+#   we can override this expected folder
+#   by using the working_dir setting
+#   and specifying where our application files
+#   are going to be
