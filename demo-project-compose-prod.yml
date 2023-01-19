@@ -13,7 +13,7 @@ services:
       MYSQL_USER: homestead
       MYSQL_PASSWORD: secret
     ports:
-      - "13066:3306"
+      - "3306:3306"
     networks:
       - app-network
   # redis is used for sessions, queues, caching
@@ -21,7 +21,7 @@ services:
     container_name: redis
     image: redis:7-alpine3.17
     ports:
-      - "16379:6379"
+      - "6379:6379"
     volumes:
       - redis:/data
     networks:
