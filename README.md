@@ -59,13 +59,16 @@
   - in your local development environment:
     - `cd ~/Documents/projects/docker`
       - First clone `rnottinger/docker-compose-files`
-        - `docker-compose-files/`
-          - `demo-project-compose.yml`
-            - used during local development
-          - `demo-project-compose-prod.yml`
-            - used for production
-          - `README.md`
-            - the file you are reading right now!
+        - https://github.com/rnottinger/docker-compose-files
+          - `docker-compose-files/`
+            - `demo-project-compose.yml`
+              - used during local development
+            - `demo-project-compose-prod.yml`
+              - used for production
+            - `README.md`
+              - the file you are reading right now!
+            - `.gitignore`
+              - list of files & folders that should not be under version control
     - Then create a new directory called `demo-app/`
       - `mkdir -p ~/Documents/projects/docker/demo-app`
       - `cd ~/Documents/projects/docker/demo-app`
@@ -81,12 +84,20 @@
         - `~/Documents/projects/docker/docker-compose-files/demo-project-compose.yml`
         - `~/Documents/projects/docker/docker-compose-files/demo-project-compose-prod.yml`
         - `~/Documents/projects/docker/docker-compose-files/README.md`
+        - `~/Documents/projects/docker/docker-compose-files/.gitignore`
     - Confirm you have the following directory structure:
       - `~/Documents/projects/docker/demo-app/`
         - `~/Documents/projects/docker/demo-app/client/<the-angular-app>`
         - `~/Documents/projects/docker/demo-app/server/<the-laravel-app>`
         - symbolic link --> `~/Documents/projects/docker/demo-app/docker-compose-prod.yml -> ~/Documents/projects/docker/docker-compose-files/demo-project-compose-prod.yml`
         - symbolic link --> `~/Documents/projects/docker/demo-app/docker-compose.yml -> ~/Documents/projects/docker/docker-compose-files/demo-project-compose.yml`
+        - NOTE this directory is not under version control
+          - `~/Documents/projects/docker/demo-app/`
+            - We are only using this directory to spin up our containers using docker-compose commands in the terminal.
+      - Open each of the following directories in a separate IDE window.
+        - I'm using PHPStorm to open the `~/Documents/projects/docker/demo-app/server` Laravel project directory.
+        - I'm using WebStorm to open the `~/Documents/projects/docker/demo-app/client` Angular project directory.
+        - I'm using Webstorm to open the `~/Documents/projects/docker/docker-compose-files` docker-compose project directory.
     - Docker setup is now complete!
       - Start your containers!
         - `cd ~/Documents/projects/docker/demo-app`
@@ -97,7 +108,10 @@
         - `docker-compose up -d --build`
           - to build images
           - and start containers
-          - and run containers in detached mode
+          - and run containers in detached mode 
+            - in other words, run in background 
+              - so terminal can be used 
+                - for other things
           - `NOTE`:
             - `docker-compose.yml` is `the default file` used
               - this is my local development docker-compose configuration file
@@ -106,7 +120,8 @@
               - this is my production docker-compose configuration file
                 - set more secure passwords
                 - and use default/expected ports 
-                - other settings that may differ in production from local development environment configuration
+                - other settings that may differ in production 
+                  - from local development docker-compose configuration
 
 ```shell
 
