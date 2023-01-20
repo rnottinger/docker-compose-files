@@ -14,7 +14,7 @@ services:
       MYSQL_PASSWORD: secret
       MYSQL_ROOT_PASSWORD: root
     ports:
-      - "13066:3306"
+      - "13306:3306"
     networks:
       - app-network
   # redis is used for sessions, queues, caching
@@ -27,9 +27,9 @@ services:
       - redis:/data
     networks:
       - app-network
-  nginx:
+  nginx-php:
     image: nginx:stable-alpine
-    container_name: nginx
+    container_name: nginx-php
     ports:
       - "8088:80"
     volumes:
@@ -42,7 +42,7 @@ services:
       - app-network
   php:
     container_name: php
-    image: rnottinger/php
+    image: rnottinger/php-8.1.14-laravel-9.48.0
     build:
       context: server/.
       dockerfile: docker/Dockerfile
@@ -58,6 +58,8 @@ services:
   composer:
     image: composer:latest
     container_name: composer
+    depends_on:
+      - php
     volumes:
       - ./server:/var/www/html
     working_dir: /var/www/html
@@ -71,6 +73,7 @@ services:
     volumes:
       - ./server:/var/www/html
     depends_on:
+      - php
       - mysql
     working_dir: /var/www/html
     # artisan is not installed globally
@@ -78,9 +81,9 @@ services:
     entrypoint: ['/var/www/html/artisan']
     networks:
       - app-network
-  frontend:
-    container_name: angular-app
-    image: rnottinger/angular-app
+  nginx-angular:
+    container_name: nginx-angular
+    image: rnottinger/angular-15.1.0
     build:
       context: client/.
       dockerfile: docker/Dockerfile
