@@ -9,9 +9,10 @@ services:
       - mysql:/var/lib/mysql
     environment:
       MYSQL_DATABASE: homestead
-      MYSQL_ROOT_PASSWORD: root
       MYSQL_USER: homestead
+      # you should set the following 2 passwords to have better passwords in production
       MYSQL_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: root
     ports:
       - "13066:3306"
     networks:
